@@ -1,0 +1,6 @@
+hash: c6bca4f3a8ceddd86e7711b7cf9c3c48c268801c3f4cf05dddd67c9b07dd3c59
+updated: 2016-06-13T10:59:08.0105232-04:00
+imports:
+- name: github.com/spf13/pflag
+  version: 367864438f1b1a3c7db4da06a2f55b144e6784e0
+devImports: []
