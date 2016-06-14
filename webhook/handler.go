@@ -26,7 +26,7 @@ func (ah *AuthorizationHandler) ServeHTTP(w http.ResponseWriter, r *http.Request
 		fmt.Printf("%+v\n", *sar.Spec.ResourceAttributes)
 	}
 
-	// Allow all access
+	// Currently allows all access
 	sar.Status.Allowed = true
 
 	payload, err := json.Marshal(sar)
