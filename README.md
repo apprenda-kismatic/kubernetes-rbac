@@ -10,7 +10,7 @@ Kubernetes RBAC is at an early stage and under active development. We do not rec
 
 ## Contributing to Kubernetes RBAC
 
-Kubernetes LDAP is an open source project and contributors are welcome!
+Kubernetes RBAC is an open source project and contributors are welcome!
 Join us on IRC at [#kismatic on freenode.net](http://webchat.freenode.net/?channels=%23kismatic&uio=d4), [file an issue](https://github.com/kismatic/kubernetes-rbac/issues) here on Github.
 
 ## Licensing
