@@ -63,5 +63,5 @@ type RoleBinding struct {
 	// Subjects holds references to the objects the role applies to.
 	Subjects []Subject `json:"subjects"`
 	// Role in the current namespace or a ClusterRole in the global namespace.
-	Role `json:"role"`
+	Role Role `json:"role"`
 }
