@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// AuthorizationHandler is the HTTP handler for the authorization webhook
 type AuthorizationHandler struct {
 }
 

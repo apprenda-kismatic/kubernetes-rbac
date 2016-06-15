@@ -30,6 +30,7 @@ type Request struct {
 	Action APIAction
 }
 
+// PolicyRuleGetter gets policy rules
 type PolicyRuleGetter interface {
 	// GetApplicableRules gets the policy rules that apply to the given user/group in the
 	// specified namespace.
