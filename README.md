@@ -10,6 +10,55 @@ Kubernetes role-based access control (RBAC) plug-in
 
 Kubernetes RBAC is at an early stage and under active development. We do not recommend its use in production, but we encourage you to try out Kubernetes RBAC and provide feedback via issues and pull requests.
 
+## Getting Started
+The project provides RBAC for Kubernetes via an authorization webhook.
+
+Pre-requisites
+--------------
+* Certificate / private key pair for the webhook service
+* Certificate / private key pair for the Kubernetes webhook client
+
+Starting the Webhook service
+----------------------------
+```
+kubernetes-rbac --tls-cert-file pathToCertFile --tls-private-key-file patoToPrivateKey
+```
+
+Configuring the Authorization webhook
+-------------------------------------
+Create a yaml file to define the webhook:
+```
+# clusters refers to the remote service.
+clusters:
+  - name: authz-webhook
+    cluster:
+      certificate-authority: /someCert.cert        # CA for verifying the remote service.
+      server: https://authz-webhook:4000/authorize # URL of remote service to query. Must use 'https'.
+
+# users refers to the K8s API Server's webhook configuration.
+users:
+  - name: authz-webhook-client
+    user:
+      client-certificate: /webhook-client.cert # cert for the webhook plugin to use
+      client-key: /webhook-client.key          # key matching the cert
+
+# kubeconfig files require a context. Provide one for the API Server.
+current-context: authz-webhook
+contexts:
+- context:
+    cluster: authz-webhook
+    user: authz-webhook-client
+  name: authz-webhook
+```
+
+Set the following flags when starting the K8s API Server:
+```
+--authorization-mode=Webhook # Specify Webhook authorization mode
+--authorization-webhook-config-file=/root/authz-webhook.yaml # path to the webhook yaml
+--authorization-webhook-cache-authorized-ttl=30m0s # set authorized response cache TTL
+--authorization-webhook-cache-unauthorized-ttl=5m0s # set unauthorized response cache TTL
+```
+
 ## Contributing to Kubernetes RBAC
 
 Kubernetes RBAC is an open source project and contributors are welcome!
