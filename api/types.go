@@ -1,14 +1,22 @@
 package api
 
 const (
-	APIGroupAll        = "*"
-	ResourceAll        = "*"
-	VerbAll            = "*"
-	NonResourceAll     = "*"
-	NamespaceAll       = "*"
-	GroupKind          = "Group"
+	// APIGroupAll represents all the API Groups
+	APIGroupAll = "*"
+	// ResourceAll represents all the resources
+	ResourceAll = "*"
+	// VerbAll represents all the verbs
+	VerbAll = "*"
+	// NonResourceAll represents all the non-resources
+	NonResourceAll = "*"
+	// NamespaceAll represents all the namespaces.
+	NamespaceAll = "*"
+	// GroupKind is the group subject kind.
+	GroupKind = "Group"
+	// ServiceAccountKind is the service account subject kind.
 	ServiceAccountKind = "ServiceAccount"
-	UserKind           = "User"
+	// UserKind is the user subject kind.
+	UserKind = "User"
 )
 
 // PolicyRule holds information that describes a policy rule, but does not contain information
