@@ -2,6 +2,8 @@
 [![Build Status](https://travis-ci.org/kismatic/kubernetes-rbac.svg?branch=master)](https://travis-ci.org/kismatic/kubernetes-rbac)
 [![Go Report Card](https://goreportcard.com/badge/github.com/kismatic/kubernetes-rbac)](https://goreportcard.com/report/github.com/kismatic/kubernetes-rbac)
 [![GoDoc](https://godoc.org/github.com/kismatic/kubernetes-rbac?status.svg)](https://godoc.org/github.com/kismatic/kubernetes-rbac)
+[![Slack Status](http://slack.k6c.io/badge.svg)](http://slack.k6c.io)
+
 Kubernetes role-based access control (RBAC) plug-in
 
 ## Project Status
