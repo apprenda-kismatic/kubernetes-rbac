@@ -1,0 +1,3 @@
+package: github.com/kismatic/kubernetes-rbac
+import:
+- package: github.com/spf13/pflag

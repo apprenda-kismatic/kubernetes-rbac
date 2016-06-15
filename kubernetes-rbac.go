@@ -15,8 +15,36 @@
 // Package kubernetes-rbac contains the role-based access control (RBAC) plug-in for Kubernetes.
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+	"net/http"
+	"os"
+
+	"github.com/kismatic/kubernetes-rbac/webhook"
+	flag "github.com/spf13/pflag"
+)
+
+var flTLSCertFile = flag.String("tls-cert-file", "", "X509 certificate for HTTPS")
+var flTLSKeyFile = flag.String("tls-private-key-file", "", "X509 private key matching --tls-cert-file for HTTPS")
 
 func main() {
-  fmt.Printf("Coming soon!\n")
+	flag.Parse()
+
+	h := &webhook.AuthorizationHandler{}
+
+	http.Handle("/authorize", h)
+
+	if *flTLSCertFile == "" {
+		fmt.Fprintln(os.Stderr, "--tls-cert-file is required.")
+		os.Exit(1)
+	}
+
+	if *flTLSKeyFile == "" {
+		fmt.Fprintln(os.Stderr, "--tls-private-key-file is required.")
+		os.Exit(1)
+	}
+
+	log.Fatal(http.ListenAndServeTLS(":4000", *flTLSCertFile, *flTLSKeyFile, nil))
+
 }
