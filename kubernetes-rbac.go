@@ -17,23 +17,28 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/kismatic/kubernetes-rbac/authorization"
+	"github.com/kismatic/kubernetes-rbac/repository/file"
 	"github.com/kismatic/kubernetes-rbac/webhook"
 	flag "github.com/spf13/pflag"
 )
 
 var flTLSCertFile = flag.String("tls-cert-file", "", "X509 certificate for HTTPS")
 var flTLSKeyFile = flag.String("tls-private-key-file", "", "X509 private key matching --tls-cert-file for HTTPS")
+var flPolicyFile = flag.String("rbac-policy-file", "rbac-policy.json", "File that defines the RBAC policy")
+var flDebug = flag.Bool("debug", false, "enable debug logging")
 
 func main() {
 	flag.Parse()
 
-	h := &webhook.AuthorizationHandler{}
-
-	http.Handle("/authorize", h)
+	if !*flDebug {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	if *flTLSCertFile == "" {
 		fmt.Fprintln(os.Stderr, "--tls-cert-file is required.")
@@ -44,6 +49,16 @@ func main() {
 		fmt.Fprintln(os.Stderr, "--tls-private-key-file is required.")
 		os.Exit(1)
 	}
+
+	repo, err := file.Create(*flPolicyFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error creating repo: %v", err)
+	}
+
+	rg := authorization.RepoRuleGetter{repo}
+	h := &webhook.AuthorizationHandler{&rg}
+
+	http.Handle("/authorize", h)
 
 	log.Fatal(http.ListenAndServeTLS(":4000", *flTLSCertFile, *flTLSKeyFile, nil))
 

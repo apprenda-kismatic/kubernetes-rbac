@@ -1,15 +1,23 @@
 package authorization
 
-import "github.com/kismatic/kubernetes-rbac/api"
+import (
+	"log"
+
+	"github.com/kismatic/kubernetes-rbac/api"
+)
 
 // RuleValidator determines if the APIAction is allowed by a PolicyRule
 type RuleValidator func(api.PolicyRule, APIAction) bool
 
 // IsAuthorized determines whether the policy allows the action requested by the user
-func IsAuthorized(ruleGetter PolicyRuleGetter, ar *Request) bool {
+func IsAuthorized(ruleGetter PolicyRuleGetter, ar *Request) (bool, error) {
 
 	// Get all the PolicyRules that apply to the user in the given namespace
-	rules := ruleGetter.GetApplicableRules(ar.User, ar.Groups, ar.Action.Namespace)
+	rules, err := ruleGetter.GetApplicableRules(ar.User, ar.Groups, ar.Action.Namespace)
+	if err != nil {
+		return false, err
+	}
+	log.Printf("Applicable rules for user '%s', groups: '%v' in namespace '%s': %v", ar.User, ar.Groups, ar.Action.Namespace, rules)
 
 	// Depending on the request, we might be validating access to an API resource, or to
 	// a "NonResource" URL.
@@ -21,11 +29,11 @@ func IsAuthorized(ruleGetter PolicyRuleGetter, ar *Request) bool {
 	// Find a rule that allows the requested action
 	for _, r := range rules {
 		if validateRule(r, ar.Action) {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func isResourceActionAllowed(rule api.PolicyRule, action APIAction) bool {

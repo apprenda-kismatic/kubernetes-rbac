@@ -17,7 +17,16 @@ const (
 	ServiceAccountKind = "ServiceAccount"
 	// UserKind is the user subject kind.
 	UserKind = "User"
+	// UserAll represents all users
+	UserAll = "*"
 )
+
+// ObjectReference used to reference another object in the API
+type ObjectReference struct {
+	Kind      string `json:"kind,omitempty"`
+	Namespace string `json:"namespace,omitempty"`
+	Name      string `json:"name,omitempty"`
+}
 
 // PolicyRule holds information that describes a policy rule, but does not contain information
 // about who the rule applies to or which namespace the rule applies to.
@@ -71,5 +80,5 @@ type RoleBinding struct {
 	// Subjects holds references to the objects the role applies to.
 	Subjects []Subject `json:"subjects"`
 	// Role in the current namespace or a ClusterRole in the global namespace.
-	Role Role `json:"role"`
+	RoleRef ObjectReference `json:"roleRef"`
 }

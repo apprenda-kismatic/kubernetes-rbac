@@ -1,0 +1,75 @@
+{
+    "Roles":[
+        {
+            "name":"api-access",
+            "namespace":"",
+            "rules":[
+                {
+                    "verbs": ["get"],
+                    "nonResourceURLs": ["/api", "/apis"]
+                }
+            ]
+        },
+        {
+            "name":"cluster-admins",
+            "namespace": "",
+            "rules":[
+                {
+                    "verbs": ["*"],
+                    "apiGroups": [""],
+                    "resources": ["nodes", "namespaces"]
+                }
+            ]
+        },
+        {
+            "name":"admin",
+            "namespace":"project-go",
+            "rules": [
+                {
+                    "verbs": ["*"],
+                    "apiGroups": ["","extensions"],
+                    "resources": ["*"]
+                }
+            ]
+        }
+    ],
+    "RoleBindings": [
+        {
+            "name":"api-access",
+            "namespace":"",
+            "subjects": [
+                {"kind":"User", "name":"bob"}
+            ],
+            "roleRef": {
+                "kind": "role",
+                "name": "api-access",
+                "namespace": ""
+            }
+        },
+        {
+            "name":"cluster-admins",
+            "namespace":"",
+            "subjects": [
+                {"kind": "User", "name": "bob"},
+                {"kind": "User", "name": "alice"}
+            ],
+            "roleRef": {
+                "kind": "role",
+                "name": "cluster-admins",
+                "namespace": ""
+            }
+        },
+        {
+            "name":"project-go-admins",
+            "namespace": "project-go",
+            "subjects": [
+                {"kind": "User", "name": "bob"}
+            ],
+            "roleRef": {
+                "kind": "role",
+                "name": "admin",
+                "namespace": "project-go"
+            }
+        }
+    ]
+}

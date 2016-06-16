@@ -10,8 +10,8 @@ type dummyRuleGetter struct {
 	rules []api.PolicyRule
 }
 
-func (drg dummyRuleGetter) GetApplicableRules(user string, groups []string, namespace string) []api.PolicyRule {
-	return drg.rules
+func (drg dummyRuleGetter) GetApplicableRules(user string, groups []string, namespace string) ([]api.PolicyRule, error) {
+	return drg.rules, nil
 }
 
 func TestIsAuthorized(t *testing.T) {
@@ -55,7 +55,7 @@ func TestIsAuthorized(t *testing.T) {
 	for i, r := range rulesThatAuthorize {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
 
-		if !IsAuthorized(drg, req) {
+		if auth, _ := IsAuthorized(drg, req); !auth {
 			t.Error("Test case", i, "failed. Expected authorized = true, but got false.")
 		}
 	}
@@ -101,7 +101,7 @@ func TestIsNotAuthorized(t *testing.T) {
 
 	for i, r := range rulesThatDontAuthorize {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
-		auth := IsAuthorized(drg, req)
+		auth, _ := IsAuthorized(drg, req)
 
 		if auth {
 			t.Error("Test case", i, "failed. Expected authorized = false, but got authorized = true.")
@@ -153,8 +153,8 @@ func TestIsAuthorizedWithResourceNames(t *testing.T) {
 
 	for i, r := range rulesThatAuthorize {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
-
-		if !IsAuthorized(drg, req) {
+		auth, _ := IsAuthorized(drg, req)
+		if !auth {
 			t.Error("Test case", i, "failed. Expected authorized = true, but got false.")
 		}
 	}
@@ -203,8 +203,9 @@ func TestIsNotAuthorizedWithResourceNames(t *testing.T) {
 
 	for i, r := range rulesThatDontAuth {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
+		auth, _ := IsAuthorized(drg, req)
 
-		if IsAuthorized(drg, req) {
+		if auth {
 			t.Error("Test case", i, "failed. Expected authorized = false, but got true.")
 		}
 	}
@@ -244,8 +245,9 @@ func TestIsAuthorizedNonResourceRequest(t *testing.T) {
 
 	for i, r := range rulesThatAuthorize {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
+		auth, _ := IsAuthorized(drg, req)
 
-		if !IsAuthorized(drg, req) {
+		if !auth {
 			t.Error("Test case", i, "failed. Expected authorized = true, but got false.")
 		}
 	}
@@ -285,8 +287,9 @@ func TestIsNotAuthorizedNonResourceRequest(t *testing.T) {
 
 	for i, r := range rulesThatDontAuthorize {
 		drg := dummyRuleGetter{[]api.PolicyRule{r}}
+		auth, _ := IsAuthorized(drg, req)
 
-		if IsAuthorized(drg, req) {
+		if auth {
 			t.Error("Test case", i, "failed. Expected authorized = false, but got true.")
 		}
 	}
@@ -334,7 +337,7 @@ func TestIsAuthorizedMultipleRules(t *testing.T) {
 		},
 	}
 
-	if !IsAuthorized(drg, req) {
+	if auth, _ := IsAuthorized(drg, req); !auth {
 		t.Error("Expected isAuthorized = true, but got false")
 	}
 
