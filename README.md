@@ -18,10 +18,18 @@ Pre-requisites
 * Certificate / private key pair for the webhook service
 * Certificate / private key pair for the Kubernetes webhook client
 
+Defining RBAC policy
+--------------------
+The role-based access control plugin allows cluster operators to define RBAC policy. As of now, the policy is defined in a JSON file with two main constructs:
+* Role: Named role that contains a collection of policy rules
+* Role Binding: Binds a role to a collection of subjects
+
+See sample-policy.json for more details.
+
 Starting the Webhook service
 ----------------------------
 ```
-kubernetes-rbac --tls-cert-file pathToCertFile --tls-private-key-file patoToPrivateKey
+kubernetes-rbac --tls-cert-file pathToCertFile --tls-private-key-file patoToPrivateKey --rbac-policy-file pathToRbacPolicyJsonFile 
 ```
 
 Configuring the Authorization webhook
