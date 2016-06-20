@@ -21,8 +21,10 @@ Pre-requisites
 Defining RBAC policy
 --------------------
 The role-based access control plugin allows cluster operators to define RBAC policy. As of now, the policy is defined in a JSON file with two main constructs:
-* Role: Named role that contains a collection of policy rules
-* Role Binding: Binds a role to a collection of subjects
+* Role: Named role in a given namespace that contains a collection of policy rules 
+* Cluster Role: Similar to a Role, expect it is a cluster-wide role
+* Role Binding: Binds a role or a cluster role to a collection of subjects in a specific namespace
+* Cluster Role Binding: Binds a cluster role to a collection of subjects
 
 See sample-policy.json for more details.
 

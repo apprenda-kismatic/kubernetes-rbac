@@ -6,6 +6,8 @@ import "github.com/kismatic/kubernetes-rbac/api"
 type PolicyRepository interface {
 	RoleBindingRepository
 	RoleRepository
+	ClusterRoleRepository
+	ClusterRoleBindingRepository
 }
 
 // RoleRepository provides access to persisted roles.
@@ -33,4 +35,15 @@ type RoleBindingRepository interface {
 
 	// ListRoleBindings in the given namespace
 	ListRoleBindings(namespace string) ([]api.RoleBinding, error)
+}
+
+// ClusterRoleRepository provides access to persisted cluster roles.
+type ClusterRoleRepository interface {
+	// Get the role with the given name in the given namespace.
+	GetClusterRole(name string) (*api.ClusterRole, error)
+}
+
+// ClusterRoleBindingRepository provides access to persisted cluster role bindings.
+type ClusterRoleBindingRepository interface {
+	ListClusterRoleBindings() ([]api.ClusterRoleBinding, error)
 }

@@ -35,14 +35,44 @@ func (g *RepoRuleGetter) GetApplicableRules(user string, groups []string, namesp
 		for _, s := range b.Subjects {
 			// Add the rules if the subject matches the user being authorized
 			if subjectMatches(s, user, groups) {
-				role, err := g.Repo.GetRole(b.RoleRef.Name, b.RoleRef.Namespace)
-				if err != nil {
-					return nil, err
+				switch b.RoleRef.Kind {
+				case api.RoleKind:
+					role, err := g.Repo.GetRole(b.RoleRef.Name, b.RoleRef.Namespace)
+					if err != nil {
+						return nil, err
+					}
+					rules = append(rules, role.Rules...)
+				case api.ClusterRoleKind:
+					role, err := g.Repo.GetClusterRole(b.RoleRef.Name)
+					if err != nil {
+						return nil, err
+					}
+					rules = append(rules, role.Rules...)
+				default:
+					return nil, fmt.Errorf("Unknown Role reference Kind '%s'", b.RoleRef.Kind)
 				}
-				rules = append(rules, role.Rules...)
 			}
 		}
 	}
+
+	// Get all cluster rules that are bound to the user
+	cbs, err := g.Repo.ListClusterRoleBindings()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, b := range cbs {
+		for _, s := range b.Subjects {
+			if subjectMatches(s, user, groups) {
+				r, err := g.Repo.GetClusterRole(b.RoleRef.Name)
+				if err != nil {
+					return nil, err
+				}
+				rules = append(rules, r.Rules...)
+			}
+		}
+	}
+
 	return rules, nil
 }
 

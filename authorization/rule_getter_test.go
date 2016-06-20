@@ -9,8 +9,10 @@ import (
 )
 
 type fakeRepo struct {
-	bindings []api.RoleBinding
-	roles    []api.Role
+	bindings            []api.RoleBinding
+	roles               []api.Role
+	clusterRoles        []api.ClusterRole
+	clusterRoleBindings []api.ClusterRoleBinding
 }
 
 func (r fakeRepo) GetRoleBinding(name, namespace string) (*api.RoleBinding, error) { return nil, nil }
@@ -40,10 +42,25 @@ func (r fakeRepo) GetRole(name, namespace string) (*api.Role, error) {
 	return nil, fmt.Errorf("Role Not found")
 }
 
+func (r fakeRepo) GetClusterRole(name string) (*api.ClusterRole, error) {
+	for _, r := range r.clusterRoles {
+		if r.Name == name {
+			return &r, nil
+		}
+	}
+	return nil, fmt.Errorf("Role not found")
+}
+
+func (r fakeRepo) ListClusterRoleBindings() ([]api.ClusterRoleBinding, error) {
+	return r.clusterRoleBindings, nil
+}
+
 func TestRuleGetterNoBindings(t *testing.T) {
 	roles := []api.Role{}
 	bindings := []api.RoleBinding{}
-	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles}}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
 
 	cases := []struct {
 		user  string
@@ -90,36 +107,38 @@ func TestRuleGetterSingleSubjectBinding(t *testing.T) {
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{aliceSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role1"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role1"},
 		},
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{aliceSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role2"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role2"},
 		},
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{developersSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role3"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role3"},
 		},
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{developersSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role4"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role4"},
 		},
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{charlieSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role5"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role5"},
 		},
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{marketingSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role6"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role6"},
 		},
 	}
 
-	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles}}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
 
 	cases := []struct {
 		user          string
@@ -193,10 +212,12 @@ func TestRuleGetterMultiUserBinding(t *testing.T) {
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{aliceSubject, charlieSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role1"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role1"},
 		},
 	}
-	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles}}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
 
 	cases := []struct {
 		user          string
@@ -242,11 +263,13 @@ func TestRuleGetterMultiGroupBinding(t *testing.T) {
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{aliceSubject, developersSubject, marketingSubject},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role1"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role1"},
 		},
 	}
 
-	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles}}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
 
 	cases := []struct {
 		user          string
@@ -293,11 +316,13 @@ func TestRuleGetterWildcardUsers(t *testing.T) {
 		{
 			Namespace: "project1",
 			Subjects:  []api.Subject{{Kind: "User", Name: "*"}},
-			RoleRef:   api.ObjectReference{Namespace: "project1", Name: "role1"},
+			RoleRef:   api.ObjectReference{Kind: api.RoleKind, Namespace: "project1", Name: "role1"},
 		},
 	}
 
-	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles}}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
 
 	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "project1")
 	if err != nil {
@@ -305,5 +330,158 @@ func TestRuleGetterWildcardUsers(t *testing.T) {
 	}
 	if !reflect.DeepEqual(ar, roles[0].Rules) {
 		t.Errorf("Expected rules did not match the obtained rules")
+	}
+}
+
+func TestClusterRoleGetNoNamespace(t *testing.T) {
+	bindings := []api.RoleBinding{}
+	roles := []api.Role{}
+	clusterRoles := []api.ClusterRole{
+		{
+			Name:  "role1",
+			Rules: []api.PolicyRule{{Verbs: []string{"role1"}}},
+		},
+	}
+	clusterRoleBindings := []api.ClusterRoleBinding{
+		{
+			Name:     "cluster1",
+			Subjects: []api.Subject{{Kind: "User", Name: "alice"}},
+			RoleRef:  api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role1"},
+		},
+	}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
+
+	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "")
+	if err != nil {
+		t.Errorf("Error getting rules: %v", err)
+	}
+	if !reflect.DeepEqual(ar, clusterRoles[0].Rules) {
+		t.Errorf("Expected rules did not match the obtained rules")
+	}
+}
+
+func TestClusterRoleGetWithNamespace(t *testing.T) {
+	bindings := []api.RoleBinding{}
+	roles := []api.Role{}
+	clusterRoles := []api.ClusterRole{
+		{
+			Name:  "role1",
+			Rules: []api.PolicyRule{{Verbs: []string{"role1"}}},
+		},
+	}
+	clusterRoleBindings := []api.ClusterRoleBinding{
+		{
+			Name:     "cluster1",
+			Subjects: []api.Subject{{Kind: "User", Name: "alice"}},
+			RoleRef:  api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role1"},
+		},
+	}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
+
+	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "some-project")
+	if err != nil {
+		t.Errorf("Error getting rules: %v", err)
+	}
+	if !reflect.DeepEqual(ar, clusterRoles[0].Rules) {
+		t.Errorf("Expected rules did not match the obtained rules")
+	}
+}
+
+func TestClusterRoleNoBinding(t *testing.T) {
+	bindings := []api.RoleBinding{}
+	roles := []api.Role{}
+	clusterRoles := []api.ClusterRole{
+		{
+			Name:  "role1",
+			Rules: []api.PolicyRule{{Verbs: []string{"role1"}}},
+		},
+	}
+	clusterRoleBindings := []api.ClusterRoleBinding{
+		{
+			Name:     "cluster1",
+			Subjects: []api.Subject{{Kind: "User", Name: "bob"}},
+			RoleRef:  api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role1"},
+		},
+	}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
+	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "some-project")
+	if err != nil {
+		t.Errorf("Error getting rules: %v", err)
+	}
+
+	// Bob should have no rules
+	if !reflect.DeepEqual(ar, []api.PolicyRule{}) {
+		t.Errorf("Expected rules did not match the obtained rules")
+	}
+}
+
+func TestClusterRoleDoesNotExist(t *testing.T) {
+	bindings := []api.RoleBinding{}
+	roles := []api.Role{}
+	clusterRoles := []api.ClusterRole{}
+	clusterRoleBindings := []api.ClusterRoleBinding{
+		{
+			Name:     "cluster1",
+			Subjects: []api.Subject{{Kind: "User", Name: "alice"}},
+			RoleRef:  api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role1"},
+		},
+	}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
+	_, err := ruleGetter.GetApplicableRules("alice", []string{}, "some-project")
+	if err == nil {
+		t.Errorf("Expected an error, but got nil")
+	}
+}
+
+func TestClusterRoleRefFromRoleBinding(t *testing.T) {
+	bindings := []api.RoleBinding{
+		{
+			Namespace: "project1",
+			Subjects:  []api.Subject{{Kind: "User", Name: "alice"}},
+			RoleRef:   api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role1"},
+		},
+	}
+	roles := []api.Role{}
+	clusterRoles := []api.ClusterRole{
+		{
+			Name:  "role1",
+			Rules: []api.PolicyRule{{Verbs: []string{"role1"}}},
+		},
+	}
+	clusterRoleBindings := []api.ClusterRoleBinding{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, clusterRoleBindings}}
+	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "project1")
+	if err != nil {
+		t.Errorf("Error getting applicable rules: %v", err)
+	}
+
+	if !reflect.DeepEqual(ar, clusterRoles[0].Rules) {
+		t.Errorf("Expected rules are not equal to the obtained rules")
+	}
+}
+
+func TestClusterRoleFromRoleBindingWrongNamespace(t *testing.T) {
+	bindings := []api.RoleBinding{
+		{
+			Namespace: "project1",
+			Subjects:  []api.Subject{{Kind: "User", Name: "alice"}},
+			RoleRef:   api.ObjectReference{Kind: api.ClusterRoleKind, Name: "role"},
+		},
+	}
+	clusterRoles := []api.ClusterRole{
+		{
+			Name:  "role1",
+			Rules: []api.PolicyRule{{Verbs: []string{"role1"}}},
+		},
+	}
+	crb := []api.ClusterRoleBinding{}
+	roles := []api.Role{}
+	ruleGetter := RepoRuleGetter{fakeRepo{bindings, roles, clusterRoles, crb}}
+	ar, err := ruleGetter.GetApplicableRules("alice", []string{}, "someOtherNamespace")
+	if err != nil {
+		t.Errorf("Error getting applicale rules: %v", err)
+	}
+	if !reflect.DeepEqual(ar, []api.PolicyRule{}) {
+		t.Errorf("Expected rules are not equal to obtained rules")
 	}
 }

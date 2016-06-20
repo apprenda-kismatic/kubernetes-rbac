@@ -19,6 +19,10 @@ const (
 	UserKind = "User"
 	// UserAll represents all users
 	UserAll = "*"
+	// RoleKind is the role object reference Kind
+	RoleKind = "Role"
+	// ClusterRoleKind is the cluster role object reference Kind
+	ClusterRoleKind = "ClusterRole"
 )
 
 // ObjectReference used to reference another object in the API
@@ -80,5 +84,23 @@ type RoleBinding struct {
 	// Subjects holds references to the objects the role applies to.
 	Subjects []Subject `json:"subjects"`
 	// Role in the current namespace or a ClusterRole in the global namespace.
+	RoleRef ObjectReference `json:"roleRef"`
+}
+
+// ClusterRole is a cluster-level, logical grouping of PolicyRules that can be referenced as a unit by a RoleBinding or ClusterRoleBinding.
+type ClusterRole struct {
+	// Name of the cluster role
+	Name string `json:"name,omitempty"`
+	// Rules of this ClusterRole
+	Rules []PolicyRule `json:"rules"`
+}
+
+// ClusterRoleBinding binds a set of Subjects to the referenced cluster-level Role.
+type ClusterRoleBinding struct {
+	// Name of the cluster role binding
+	Name string `json:"name,omitempty"`
+	// Subjects is the set of subjects that this role applies to
+	Subjects []Subject `json:"subjects"`
+	// RoleRef references the ClusterRole
 	RoleRef ObjectReference `json:"roleRef"`
 }

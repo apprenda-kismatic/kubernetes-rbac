@@ -14,6 +14,8 @@ import (
 type policy struct {
 	Roles        []api.Role
 	RoleBindings []api.RoleBinding
+	ClusterRoles []api.ClusterRole
+	ClusterRoleBindings []api.ClusterRoleBinding
 }
 
 // FlatFileRepository implements the repository interface and

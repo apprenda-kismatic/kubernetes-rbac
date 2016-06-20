@@ -1,9 +1,8 @@
 {
-    "Roles":[
+    "ClusterRoles": [
         {
             "name":"api-access",
-            "namespace":"",
-            "rules":[
+            "rules": [
                 {
                     "verbs": ["get"],
                     "nonResourceURLs": ["/api", "/apis"]
@@ -12,15 +11,41 @@
         },
         {
             "name":"cluster-admins",
-            "namespace": "",
             "rules":[
                 {
                     "verbs": ["*"],
                     "apiGroups": [""],
-                    "resources": ["nodes", "namespaces"]
+                    "resources": ["pods","nodes", "namespaces"]
                 }
             ]
+        }
+    ],
+    "ClusterRoleBindings": [
+        {
+            "name": "api-access",
+            "subjects": [
+                {
+                    "kind": "User",
+                    "name": "*"
+                }
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "api-access"
+            }
         },
+         {
+            "name":"cluster-admins",
+            "subjects": [
+                {"kind": "User", "name": "alice"}
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "cluster-admins"
+            }
+        }
+    ],
+    "Roles":[
         {
             "name":"admin",
             "namespace":"project-go",
@@ -35,38 +60,13 @@
     ],
     "RoleBindings": [
         {
-            "name":"api-access",
-            "namespace":"",
-            "subjects": [
-                {"kind":"User", "name":"bob"}
-            ],
-            "roleRef": {
-                "kind": "role",
-                "name": "api-access",
-                "namespace": ""
-            }
-        },
-        {
-            "name":"cluster-admins",
-            "namespace":"",
-            "subjects": [
-                {"kind": "User", "name": "bob"},
-                {"kind": "User", "name": "alice"}
-            ],
-            "roleRef": {
-                "kind": "role",
-                "name": "cluster-admins",
-                "namespace": ""
-            }
-        },
-        {
             "name":"project-go-admins",
             "namespace": "project-go",
             "subjects": [
                 {"kind": "User", "name": "bob"}
             ],
             "roleRef": {
-                "kind": "role",
+                "kind": "Role",
                 "name": "admin",
                 "namespace": "project-go"
             }
