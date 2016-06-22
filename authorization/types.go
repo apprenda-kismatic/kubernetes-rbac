@@ -1,7 +1,5 @@
 package authorization
 
-import "github.com/kismatic/kubernetes-rbac/api"
-
 // APIAction is the action that is being authorized on the given resource.
 type APIAction struct {
 	// Verb is the Kubernetes resource API verb.
@@ -28,11 +26,4 @@ type Request struct {
 	Groups []string
 	// Action is what the user is trying to do in this request.
 	Action APIAction
-}
-
-// PolicyRuleGetter gets policy rules
-type PolicyRuleGetter interface {
-	// GetApplicableRules gets the policy rules that apply to the given user/group in the
-	// specified namespace.
-	GetApplicableRules(user string, groups []string, namespace string) []api.PolicyRule
 }

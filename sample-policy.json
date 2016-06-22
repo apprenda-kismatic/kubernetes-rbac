@@ -1,0 +1,75 @@
+{
+    "ClusterRoles": [
+        {
+            "name":"api-access",
+            "rules": [
+                {
+                    "verbs": ["get"],
+                    "nonResourceURLs": ["/api", "/apis"]
+                }
+            ]
+        },
+        {
+            "name":"cluster-admins",
+            "rules":[
+                {
+                    "verbs": ["*"],
+                    "apiGroups": [""],
+                    "resources": ["pods","nodes", "namespaces"]
+                }
+            ]
+        }
+    ],
+    "ClusterRoleBindings": [
+        {
+            "name": "api-access",
+            "subjects": [
+                {
+                    "kind": "User",
+                    "name": "*"
+                }
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "api-access"
+            }
+        },
+         {
+            "name":"cluster-admins",
+            "subjects": [
+                {"kind": "User", "name": "alice"}
+            ],
+            "roleRef": {
+                "kind": "ClusterRole",
+                "name": "cluster-admins"
+            }
+        }
+    ],
+    "Roles":[
+        {
+            "name":"admin",
+            "namespace":"project-go",
+            "rules": [
+                {
+                    "verbs": ["*"],
+                    "apiGroups": ["","extensions"],
+                    "resources": ["*"]
+                }
+            ]
+        }
+    ],
+    "RoleBindings": [
+        {
+            "name":"project-go-admins",
+            "namespace": "project-go",
+            "subjects": [
+                {"kind": "User", "name": "bob"}
+            ],
+            "roleRef": {
+                "kind": "Role",
+                "name": "admin",
+                "namespace": "project-go"
+            }
+        }
+    ]
+}
